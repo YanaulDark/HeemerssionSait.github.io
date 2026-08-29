@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Heemerssion — открытое браузерное ядро на Rust. Исследуйте проект, архитектуру и исходный код на GitHub.">
+  <meta name="theme-color" content="#0b0d0f">
+  <title>Heemerssion — браузерное ядро на Rust</title>
+  <style>
+    :root{--bg:#0b0d0f;--panel:#12161a;--panel2:#171c21;--text:#f4f1ea;--muted:#a7adb3;--line:rgba(255,255,255,.11);--accent:#ff6b35;--accent2:#ffb000;--green:#9ee37d;--shadow:0 28px 80px rgba(0,0,0,.35)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    ::selection{background:var(--accent);color:#08090a}
+    .noise{position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E")}
+    .container{width:min(1160px,calc(100% - 40px));margin:auto}
+    nav{position:fixed;top:0;left:0;right:0;z-index:50;border-bottom:1px solid transparent;transition:.25s}
+    nav.scrolled{background:rgba(11,13,15,.8);backdrop-filter:blur(18px);border-color:var(--line)}
+    .nav-inner{height:76px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:-.03em}
+    .mark{width:34px;height:34px;border:1px solid rgba(255,107,53,.45);border-radius:10px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(255,107,53,.18),rgba(255,176,0,.04));box-shadow:inset 0 0 16px rgba(255,107,53,.08)}
+    .mark svg{width:22px;height:22px}
+    .nav-links{display:flex;align-items:center;gap:30px;color:var(--muted);font-size:14px}
+    .nav-links a:hover{color:var(--text)}
+    .nav-github{padding:10px 15px;border:1px solid var(--line);border-radius:10px;color:var(--text)!important;background:rgba(255,255,255,.03)}
+    .nav-github:hover{border-color:rgba(255,107,53,.5)}
+    .menu{display:none;background:none;border:0;color:var(--text);padding:8px;cursor:pointer}
+    .hero{min-height:780px;padding:160px 0 90px;position:relative;display:flex;align-items:center}
+    .hero:before{content:"";position:absolute;width:720px;height:720px;border-radius:50%;right:-280px;top:-230px;background:radial-gradient(circle,rgba(255,107,53,.17),rgba(255,107,53,0) 68%);filter:blur(10px)}
+    .hero-grid{display:grid;grid-template-columns:1.04fr .96fr;gap:72px;align-items:center}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;color:#e9c5b5;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800;margin-bottom:24px}
+    .eyebrow i{display:block;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+    h1{font-size:clamp(58px,7.5vw,104px);line-height:.9;letter-spacing:-.075em;margin:0 0 30px;font-weight:900}
+    h1 .outline{display:block;color:transparent;-webkit-text-stroke:1.5px rgba(244,241,234,.46)}
+    .lead{font-size:19px;color:var(--muted);max-width:600px;margin:0 0 34px}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 19px;border-radius:11px;font-weight:750;font-size:14px;border:1px solid transparent;cursor:pointer;transition:transform .2s,border-color .2s,background .2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-primary{background:var(--accent);color:#130904;box-shadow:0 12px 35px rgba(255,107,53,.2)}
+    .btn-primary:hover{background:#ff7e4d}
+    .btn-secondary{border-color:var(--line);background:rgba(255,255,255,.035)}
+    .btn-secondary:hover{border-color:rgba(255,255,255,.28)}
+    .mini-note{display:flex;gap:18px;margin-top:35px;color:#6f777f;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+    .mini-note span{display:flex;align-items:center;gap:7px}.mini-note span:before{content:"";width:4px;height:4px;border-radius:50%;background:#677079}
+    .engine-wrap{position:relative;min-height:500px;display:grid;place-items:center}
+    .orbit{position:absolute;border:1px solid rgba(255,255,255,.10);border-radius:50%;animation:spin 18s linear infinite}
+    .orbit.one{width:430px;height:430px}.orbit.two{width:330px;height:330px;animation-duration:13s;animation-direction:reverse;border-style:dashed}
+    .orbit:after{content:"";position:absolute;width:10px;height:10px;background:var(--accent);border-radius:50%;left:34px;top:64px;box-shadow:0 0 18px var(--accent)}
+    .orbit.two:after{background:var(--accent2);left:auto;right:19px;top:150px;box-shadow:0 0 15px var(--accent2)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .engine{width:245px;height:245px;position:relative;z-index:2;border-radius:48px;background:linear-gradient(145deg,#1c2228,#0d1013);border:1px solid rgba(255,255,255,.15);box-shadow:var(--shadow),inset 0 1px rgba(255,255,255,.08);display:grid;place-items:center;transform:rotate(-7deg)}
+    .engine:before{content:"";position:absolute;inset:16px;border:1px solid rgba(255,107,53,.25);border-radius:38px}
+    .engine-logo{font-size:90px;font-weight:950;letter-spacing:-.13em;line-height:1;color:var(--text);transform:translateX(-5px)}
+    .engine-logo b{color:var(--accent)}
+    .float-tag{position:absolute;z-index:3;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(18,22,26,.85);backdrop-filter:blur(10px);font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+    .tag-rust{right:0;top:80px;color:#ff9a73}.tag-open{left:3px;bottom:78px;color:var(--green)}
+    .ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:#0d1012}
+    .ticker-track{display:flex;width:max-content;animation:marquee 22s linear infinite;padding:18px 0}
+    .ticker span{font-size:12px;text-transform:uppercase;letter-spacing:.22em;font-weight:800;color:#8c9399;white-space:nowrap}
+    .ticker b{color:var(--accent);padding:0 30px}
+    @keyframes marquee{to{transform:translateX(-50%)}}
+    section{padding:110px 0}
+    .section-head{display:flex;justify-content:space-between;gap:30px;align-items:end;margin-bottom:48px}
+    .kicker{color:var(--accent);font-size:11px;font-weight:850;letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
+    h2{font-size:clamp(38px,5vw,64px);letter-spacing:-.055em;line-height:1;margin:0;max-width:700px}
+    .section-copy{color:var(--muted);max-width:440px;margin:0}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .card{position:relative;min-height:280px;padding:28px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.015));overflow:hidden;transition:.25s}
+    .card:hover{transform:translateY(-5px);border-color:rgba(255,107,53,.35)}
+    .card-no{font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#636b72}
+    .card-icon{width:48px;height:48px;margin:36px 0 25px;border-radius:13px;display:grid;place-items:center;background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.2);color:var(--accent);font-size:22px}
+    .card h3{font-size:20px;margin:0 0 10px;letter-spacing:-.02em}.card p{margin:0;color:var(--muted);font-size:14px}
+    .card-glow{position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,107,53,.11);filter:blur(50px);right:-100px;bottom:-100px}
+    .lab{background:#0e1114;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .terminal{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#090b0d;box-shadow:var(--shadow)}
+    .terminal-top{height:50px;display:flex;align-items:center;gap:8px;padding:0 18px;background:#14181c;border-bottom:1px solid var(--line)}
+    .dot{width:10px;height:10px;border-radius:50%;background:#3b4147}.dot:first-child{background:#ff6b55}.dot:nth-child(2){background:#ffbd44}.dot:nth-child(3){background:#52c26e}
+    .terminal-title{margin-left:auto;margin-right:auto;transform:translateX(-25px);font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#717981}
+    .terminal-body{display:grid;grid-template-columns:200px 1fr;min-height:350px}
+    .terminal-tabs{padding:18px;border-right:1px solid var(--line);background:#0d1012}
+    .tab{width:100%;text-align:left;border:0;border-radius:8px;padding:11px 12px;background:transparent;color:#767e85;font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer;margin-bottom:4px}
+    .tab.active{background:rgba(255,107,53,.1);color:#ff9973}
+    .code-wrap{padding:34px;position:relative;overflow:auto}
+    pre{margin:0;font:14px/1.9 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#c9d0d5;white-space:pre-wrap}
+    .cmd{color:#ff9871}.comment{color:#606970}.output{color:var(--green)}
+    .copy{position:absolute;top:20px;right:20px;border:1px solid var(--line);background:#14181c;color:#929aa1;border-radius:8px;padding:8px 11px;font-size:11px;cursor:pointer}
+    .copy:hover{color:white}.copy.done{color:var(--green)}
+    .manifesto{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;align-items:start}
+    .big-number{font-size:clamp(110px,18vw,230px);line-height:.75;font-weight:950;letter-spacing:-.1em;color:transparent;-webkit-text-stroke:1px rgba(255,107,53,.42);position:sticky;top:150px}
+    .manifesto-list{border-top:1px solid var(--line)}
+    .manifesto-item{display:grid;grid-template-columns:70px 1fr;gap:20px;padding:30px 0;border-bottom:1px solid var(--line)}
+    .manifesto-item span{font:700 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent)}
+    .manifesto-item h3{margin:0 0 8px;font-size:24px;letter-spacing:-.03em}.manifesto-item p{margin:0;color:var(--muted);max-width:580px}
+    .cta{padding-top:40px;padding-bottom:120px}
+    .cta-box{position:relative;padding:70px;border-radius:24px;overflow:hidden;background:var(--accent);color:#160a05;display:grid;grid-template-columns:1fr auto;align-items:center;gap:30px}
+    .cta-box:after{content:"H";position:absolute;right:190px;top:-95px;font-size:370px;font-weight:950;color:rgba(20,8,3,.07);transform:rotate(10deg)}
+    .cta-box h2{position:relative;z-index:1;max-width:670px}.cta-box p{position:relative;z-index:1;margin:18px 0 0;font-weight:600;opacity:.7}
+    .cta .btn{position:relative;z-index:2;background:#0b0d0f;color:white;padding:16px 22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 40px;color:#70777e;font-size:13px}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.footer-links{display:flex;gap:22px}.footer-links a:hover{color:var(--text)}
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s,transform .7s}.reveal.visible{opacity:1;transform:none}
+    @media(max-width:900px){.nav-links a:not(.nav-github){display:none}.hero{padding-top:130px}.hero-grid{grid-template-columns:1fr;gap:30px}.engine-wrap{min-height:430px}.section-head{display:block}.section-copy{margin-top:22px}.features{grid-template-columns:1fr}.card{min-height:auto}.terminal-body{grid-template-columns:1fr}.terminal-tabs{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.tab{width:auto;white-space:nowrap}.manifesto{grid-template-columns:1fr;gap:45px}.big-number{position:static}.cta-box{padding:45px;grid-template-columns:1fr;align-items:start}}
+    @media(max-width:600px){.container{width:min(100% - 24px,1160px)}.nav-inner{height:66px}.nav-github{display:none!important}.menu{display:block}.nav-links.open{display:flex;position:absolute;left:12px;right:12px;top:66px;padding:16px;background:#13171b;border:1px solid var(--line);border-radius:12px;flex-direction:column;align-items:stretch;gap:4px}.nav-links.open a:not(.nav-github){display:block;padding:10px}.hero{min-height:auto;padding:120px 0 70px}.lead{font-size:17px}.mini-note{flex-direction:column;gap:8px}.engine-wrap{min-height:360px}.orbit.one{width:330px;height:330px}.orbit.two{width:250px;height:250px}.engine{width:190px;height:190px;border-radius:38px}.engine-logo{font-size:72px}.float-tag{font-size:10px}.tag-rust{right:-4px;top:48px}.tag-open{left:-2px;bottom:42px}section{padding:80px 0}.section-head{margin-bottom:30px}.code-wrap{padding:55px 20px 25px}.copy{top:14px}.manifesto-item{grid-template-columns:42px 1fr}.cta-box{padding:34px 26px}.footer-inner{align-items:flex-start;flex-direction:column}.footer-links{flex-wrap:wrap}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <nav id="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top" aria-label="Heemerssion — на главную">
+        <span class="mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4v16M19 4v16M5 12h14" stroke="#ff6b35" stroke-width="2.7" stroke-linecap="round"/></svg></span>
+        Heemerssion
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#about">О проекте</a><a href="#start">Быстрый старт</a><a href="#principles">Принципы</a>
+        <a class="nav-github" href="https://github.com/YanaulDark/Heemerssion" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <button class="menu" id="menu" aria-label="Открыть меню" aria-expanded="false">☰</button>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow"><i></i> Открытый проект • Rust</div>
+          <h1>Движок для <span class="outline">открытого веба.</span></h1>
+          <p class="lead">Heemerssion — экспериментальное браузерное ядро, создаваемое на Rust. Исследуйте код, следите за развитием и участвуйте в проекте.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/YanaulDark/Heemerssion" target="_blank" rel="noopener">Смотреть исходный код <span>↗</span></a>
+            <a class="btn btn-secondary" href="#start">Быстрый старт <span>↓</span></a>
+          </div>
+          <div class="mini-note"><span>GPL-3.0</span><span>Rust + C</span><span>Open source</span></div>
+        </div>
+        <div class="engine-wrap" aria-hidden="true">
+          <div class="orbit one"></div><div class="orbit two"></div>
+          <div class="engine"><div class="engine-logo">H<b>.</b></div></div>
+          <div class="float-tag tag-rust">{ memory: safe }</div>
+          <div class="float-tag tag-open">● source: open</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="ticker" aria-hidden="true"><div class="ticker-track">
+      <span>Browser core <b>✦</b> Rust powered <b>✦</b> Open source <b>✦</b> Built in public <b>✦</b> Heemerssion <b>✦</b></span>
+      <span>Browser core <b>✦</b> Rust powered <b>✦</b> Open source <b>✦</b> Built in public <b>✦</b> Heemerssion <b>✦</b></span>
+    </div></div>
+
+    <section id="about">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">Внутри проекта</div><h2>Новая основа.<br>Системный подход.</h2></div>
+          <p class="section-copy">Проект находится в развитии: Rust служит его основной технологической базой, а интеграция библиотеки на C расширяет пространство для экспериментов.</p>
+        </div>
+        <div class="features">
+          <article class="card reveal"><span class="card-no">01 / LANGUAGE</span><div class="card-icon">⌁</div><h3>Rust в основе</h3><p>Главный язык проекта — Rust, выбранный для разработки системного программного обеспечения.</p><div class="card-glow"></div></article>
+          <article class="card reveal"><span class="card-no">02 / INTEROP</span><div class="card-icon">C</div><h3>Интеграция с C</h3><p>В проект добавляется библиотека на C. Сейчас эта часть требует дальнейшего тестирования.</p><div class="card-glow"></div></article>
+          <article class="card reveal"><span class="card-no">03 / LICENSE</span><div class="card-icon">↗</div><h3>Открытый код</h3><p>Исходный код опубликован на GitHub и распространяется по лицензии GPL-3.0.</p><div class="card-glow"></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab" id="start">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">Быстрый старт</div><h2>Код открыт.<br>Можно исследовать.</h2></div>
+          <p class="section-copy">Клонируйте репозиторий и познакомьтесь с текущей структурой проекта. Команды ниже можно скопировать одним нажатием.</p>
+        </div>
+        <div class="terminal reveal">
+          <div class="terminal-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="terminal-title">heemerssion — terminal</span></div>
+          <div class="terminal-body">
+            <div class="terminal-tabs">
+              <button class="tab active" data-tab="clone">01_clone.sh</button>
+              <button class="tab" data-tab="explore">02_explore.sh</button>
+              <button class="tab" data-tab="license">03_license.txt</button>
+            </div>
+            <div class="code-wrap">
+              <button class="copy" id="copy">Копировать</button>
+              <pre id="code"><span class="comment"># Клонировать исходный код</span>
+<span class="cmd">git clone</span> https://github.com/YanaulDark/Heemerssion.git
+<span class="cmd">cd</span> Heemerssion
+
+<span class="output">✓ Готово к исследованию</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="principles">
+      <div class="container manifesto">
+        <div class="big-number reveal">H/</div>
+        <div>
+          <div class="kicker reveal">Принципы разработки</div>
+          <h2 class="reveal" style="margin-bottom:45px">Ядро, которое растёт открыто.</h2>
+          <div class="manifesto-list">
+            <div class="manifesto-item reveal"><span>01</span><div><h3>Системный фундамент</h3><p>Фокус на низкоуровневой разработке и понятной технологической основе.</p></div></div>
+            <div class="manifesto-item reveal"><span>02</span><div><h3>Разработка на виду</h3><p>История изменений и текущий код доступны в публичном репозитории.</p></div></div>
+            <div class="manifesto-item reveal"><span>03</span><div><h3>Пространство для роста</h3><p>Rust уже лежит в основе, а другие языки и компоненты могут появляться по мере развития проекта.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <div class="cta-box reveal">
+          <div><h2>Загляните под капот Heemerssion.</h2><p>Читайте код, изучайте историю проекта и следите за новыми изменениями.</p></div>
+          <a class="btn" href="https://github.com/YanaulDark/Heemerssion" target="_blank" rel="noopener">Открыть GitHub ↗</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="container footer-inner"><div class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4v16M19 4v16M5 12h14" stroke="#ff6b35" stroke-width="2.7" stroke-linecap="round"/></svg></span>Heemerssion</div><span>Браузерное ядро на Rust.</span><div class="footer-links"><a href="https://github.com/YanaulDark/Heemerssion" target="_blank" rel="noopener">Репозиторий</a><a href="https://github.com/YanaulDark/Heemerssion/blob/main/LICENSE" target="_blank" rel="noopener">GPL-3.0</a></div></div></footer>
+
+  <script>
+    const nav=document.getElementById('nav');
+    addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20),{passive:true});
+    const menu=document.getElementById('menu'),links=document.getElementById('navLinks');
+    menu.addEventListener('click',()=>{const open=links.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'×':'☰'});
+    links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{links.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='☰'}));
+    const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+    const snippets={
+      clone:{html:'<span class="comment"># Клонировать исходный код</span>\n<span class="cmd">git clone</span> https://github.com/YanaulDark/Heemerssion.git\n<span class="cmd">cd</span> Heemerssion\n\n<span class="output">✓ Готово к исследованию</span>',text:'git clone https://github.com/YanaulDark/Heemerssion.git\ncd Heemerssion'},
+      explore:{html:'<span class="comment"># Посмотреть структуру репозитория</span>\n<span class="cmd">ls</span>\n\nHeemerssion/\nHeemerssion_Logo.jpg\nLICENSE\nREADME.md\n\n<span class="output">✓ Структура загружена</span>',text:'ls'},
+      license:{html:'<span class="comment"># Лицензия проекта</span>\nHeemerssion распространяется по лицензии\n<span class="output">GNU General Public License v3.0</span>\n\nПодробнее — в файле LICENSE репозитория.',text:'GNU General Public License v3.0'}
+    };
+    let active='clone';const code=document.getElementById('code'),copy=document.getElementById('copy');
+    document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');active=tab.dataset.tab;code.innerHTML=snippets[active].html;copy.textContent='Копировать';copy.classList.remove('done')}));
+    copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(snippets[active].text);copy.textContent='Скопировано ✓';copy.classList.add('done')}catch(e){copy.textContent='Выделите код'}});
+  </script>
+</body>
+</html>
